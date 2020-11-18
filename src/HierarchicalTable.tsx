@@ -18,40 +18,16 @@ export interface HierarchicalTableRow {
 }
 
 export interface TableProps {
-	data: HierarchicalTableData;
+	columns: Column<HierarchicalTableRow>[];
+	data: HierarchicalTableRow[];
+	renderSubRow: ({row} :{row: Row<HierarchicalTableRow}) => JSX.Element | null;
 }
 
 export function HierarchicalTable(props: TableProps): JSX.Element | null {
 
-	const expanderColumn = React.useMemo( () => ({
-		Header: () => null, // No header
-		id: 'expander', // It needs an ID
-		Cell: ({row}: {row: UseExpandedRowProps<any>})  => (
-			row.canExpand ? (
-				<span {...row.getToggleRowExpandedProps()}>
-						 {row.isExpanded ? '▼' : '►'}
-					</span>
-			) : null
-		)
-	}),[]);
-	const dataColumns: Column<HierarchicalTableRow>[] = React.useMemo(() => _.chain(props.data?.rows)
-				.flatMap(i => Object.keys(i.data))
-				.uniq()
-				.map<Column<HierarchicalTableRow>>(c => ({Header: c, accessor: `data.${c}`} as Column<HierarchicalTableRow>))
-				.value(), [props.data]);
-
-	const columnsWithExpander = React.useMemo(() => [expanderColumn, ...dataColumns], [props.data]);
-
-	const tableColumns: Column<HierarchicalTableRow>[] =React.useMemo(() => props.data?.rootKey ? [{Header: props.data.rootKey, columns: columnsWithExpander}] : columnsWithExpander, []);
-
-	const tableData = React.useMemo(() => props.data?.rows, [props.data]);
-
-	const renderSubRow = React.useCallback(({row}: {row: any}) =>
-		<HierarchicalTable data={row.originalSubRows[0]}/>, []);
-
 	const {getTableProps, headerGroups, rows, prepareRow, visibleColumns} = useTable<HierarchicalTableRow>({
-		columns: tableColumns,
-		data: tableData,
+		columns: props.columns,
+		data: props.data,
 		getSubRows: (originalRow: HierarchicalTableRow) => originalRow.nested ? [originalRow.nested] : undefined as any, // type declaration is forcing to have same type for subrows
 		expandSubRows: false
 	}, useExpanded)
@@ -84,7 +60,7 @@ export function HierarchicalTable(props: TableProps): JSX.Element | null {
 						{row.isExpanded ? (<tr key={`${row.getRowProps().key}_${i}`}>
 							{/*use visibleColumns to span all columns and thus create space for inner table*/}
 							<td colSpan={visibleColumns.length}>
-								{renderSubRow({row})}
+								{props.renderSubRow({row})}
 							</td>
 						</tr>) : null
 						}

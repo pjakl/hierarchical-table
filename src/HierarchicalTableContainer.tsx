@@ -4,28 +4,7 @@ import * as _ from 'lodash';
 import React from 'react';
 import {Column, Row, UseExpandedRowProps} from 'react-table';
 import {HierarchicalTable, HierarchicalTableData, HierarchicalTableRow} from './HierarchicalTable';
-
-export class Item {
-	@IsDefined()
-	data!: Object;
-	@IsOptional()
-	@IsObject()
-	@ValidateNested()
-	@Type(() => Kids)
-	kids?: Kids
-}
-
-export class KidsRecords {
-	@IsDefined()
-	@IsArray()
-	@ValidateNested({each: true})
-	@Type(() => Item)
-	records!: Item[];
-}
-
-export class Kids {
-	[rootKey: string]: KidsRecords;
-}
+import {Item} from './model';
 
 export interface HierarchicalTableContainerProps {
 	data: Item[];
@@ -59,6 +38,6 @@ export function HierarchicalTableContainer(props: HierarchicalTableContainerProp
 		row.subRows && row.subRows.map((subRow : any) => <HierarchicalTableContainer data={subRow}/>), []);
 
 	return (
-		<HierarchicalTable columns={tableColumns} data={tableData} renderSubRow={renderSubRow} />
+		<HierarchicalTable columns={columnsWithExpander} data={tableData} renderSubRow={renderSubRow} />
 	)
 }
