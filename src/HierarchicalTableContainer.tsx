@@ -12,7 +12,7 @@ export interface HierarchicalTableContainerProps {
 	onDelete?: (rowId: number) => void;
 }
 
-export function HierarchicalTableContainer(props: HierarchicalTableContainerProps) {
+export function HierarchicalTableContainer({data, rootColumnHeader, onDelete }: HierarchicalTableContainerProps) {
 	const expanderColumn = React.useMemo(() => ({
 		Header: () => null,
 		id: 'expander',
@@ -26,34 +26,31 @@ export function HierarchicalTableContainer(props: HierarchicalTableContainerProp
 	}), []);
 
 	const deleteActionColumn : Column<Item> | undefined = React.useMemo(() =>
-		props.onDelete && ({
-			Header: () => null, // No header
-			id: 'delete', // It needs an ID
+		onDelete && ({
+			Header: () => null,
+			id: 'delete',
 			Cell: ({row}: { row: Row<Item> }) => (
-				<span className="delete" {...row.getRowProps()} onClick={() => props.onDelete && props.onDelete(row.index)}>
+				<span className="delete" {...row.getRowProps()} onClick={() => onDelete(row.index)}>
 					<TrashIcon />
 				</span>
 			)
-		}), [props.onDelete]);
+		}), [onDelete]);
 
-const dataColumns: Column<Item>[] = React.useMemo(() => _.chain(props.data)
+const dataColumns: Column<Item>[] = React.useMemo(() => _.chain(data)
 	.flatMap(i => Object.keys(i.data))
 	.uniq()
 	.map<Column<Item>>(c => ({Header: c, accessor: `data.${c}`} as Column<Item>))
-	.value(), [props.data]);
+	.value(), [data]);
 
 const columnsWithExpander = React.useMemo(() => deleteActionColumn ? [expanderColumn, ...dataColumns, deleteActionColumn] : [expanderColumn, ...dataColumns], [expanderColumn, dataColumns, deleteActionColumn]);
 
-const tableColumns: Column<Item>[] = React.useMemo(() => props.rootColumnHeader ? [{
-	Header: props.rootColumnHeader,
+const tableColumns: Column<Item>[] = React.useMemo(() => rootColumnHeader ? [{
+	Header: rootColumnHeader,
 	columns: columnsWithExpander
-}] : columnsWithExpander, [props.rootColumnHeader, columnsWithExpander]);
+}] : columnsWithExpander, [rootColumnHeader, columnsWithExpander]);
 
 
-
-
-
-const tableData = React.useMemo(() => props.data, [props.data]);
+const tableData = React.useMemo(() => data, [data]);
 
 const renderSubRow = React.useCallback(({row}: { row: Row<Item> }) => {
 	const entries = row.original.kids && Object.entries(row.original.kids);

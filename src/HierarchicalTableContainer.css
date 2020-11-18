@@ -1,3 +1,5 @@
 .delete {
 	margin: 0 8px;
+	cursor: pointer;
+	vertical-align: middle;
 }
