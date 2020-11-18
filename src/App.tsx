@@ -6,7 +6,7 @@ import {Item} from './model';
 import {arrayPlainToClass} from './validator';
 
 function App() {
-	const [itemsState,  setItemState] = useState<Item[]>([]);
+	const [items,  setItemState] = useState<Item[]>([]);
 	const validateAndSet =  async () => {
 		const items = await arrayPlainToClass(inputJson, () => new Item());
 		setItemState(items);
@@ -16,9 +16,14 @@ function App() {
 		validateAndSet()
 	}, []);
 
+	const handleDelete = (index: number) => {
+		const newItems = items.filter((val, idx) => index !== idx);
+		setItemState(newItems);
+	}
+
 	return (
 		<div className="App">
-			<HierarchicalTableContainer data={itemsState} />
+			<HierarchicalTableContainer data={items} onDelete={(index) => handleDelete(index)} />
 		</div>
 	);
 }

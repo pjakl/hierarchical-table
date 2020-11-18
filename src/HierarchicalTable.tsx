@@ -1,9 +1,8 @@
 import BSTable from 'react-bootstrap/Table';
-import * as _ from 'lodash';
 import React, {Fragment} from 'react';
 import {
 	Column, Row,
-	useExpanded, UseExpandedRowProps,
+	useExpanded,
 	useTable
 } from 'react-table'
 import {Item} from './model';
