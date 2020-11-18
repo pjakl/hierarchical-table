@@ -1,27 +1,28 @@
-import {Type} from 'class-transformer';
-import {IsArray, IsDefined, IsObject, IsOptional, ValidateNested} from 'class-validator';
 import * as _ from 'lodash';
 import React from 'react';
 import {Column, Row, UseExpandedRowProps} from 'react-table';
-import {HierarchicalTable, HierarchicalTableData, HierarchicalTableRow} from './HierarchicalTable';
+import {HierarchicalTable} from './HierarchicalTable';
 import {Item} from './model';
 
 export interface HierarchicalTableContainerProps {
 	data: Item[];
+	rootColumnHeader?: string;
+	isDeletable?: boolean;
+	onDelete?: (rowId: number) => void;
 }
 
 export function HierarchicalTableContainer(props: HierarchicalTableContainerProps) {
-	const expanderColumn = React.useMemo( () => ({
+	const expanderColumn = React.useMemo(() => ({
 		Header: () => null, // No header
 		id: 'expander', // It needs an ID
-		Cell: ({row}: {row: UseExpandedRowProps<any>})  => (
+		Cell: ({row}: { row: UseExpandedRowProps<any> }) => (
 			row.canExpand ? (
 				<span {...row.getToggleRowExpandedProps()}>
 						 {row.isExpanded ? '▼' : '►'}
 					</span>
 			) : null
 		)
-	}),[]);
+	}), []);
 	const dataColumns: Column<Item>[] = React.useMemo(() => _.chain(props.data)
 		.flatMap(i => Object.keys(i.data))
 		.uniq()
@@ -30,14 +31,19 @@ export function HierarchicalTableContainer(props: HierarchicalTableContainerProp
 
 	const columnsWithExpander = React.useMemo(() => [expanderColumn, ...dataColumns], [props.data]);
 
-	//const tableColumns: Column<Item>[] = React.useMemo(() => props.data?.rootKey ? [{Header: props.data.rootKey, columns: columnsWithExpander}] : columnsWithExpander, []);
+	const tableColumns: Column<Item>[] = React.useMemo(() => props.rootColumnHeader ? [{Header: props.rootColumnHeader, columns: columnsWithExpander}] : columnsWithExpander, []);
 
 	const tableData = React.useMemo(() => props.data, [props.data]);
 
-	const renderSubRow = React.useCallback(({row}: {row: Row<Item>}) =>
-		row.subRows && row.subRows.map((subRow : any) => <HierarchicalTableContainer data={subRow}/>), []);
+	const renderSubRow = React.useCallback(({row}: { row: Row<Item> }) => {
+		const entries = row.original.kids && Object.entries(row.original.kids);
+		if(entries) {
+			return entries.map(([kidsKey, kidsValue]) => <HierarchicalTableContainer rootColumnHeader={kidsKey} data={kidsValue.records} />)
+		}
+		return null;
+	}, []);
 
 	return (
-		<HierarchicalTable columns={columnsWithExpander} data={tableData} renderSubRow={renderSubRow} />
+		<HierarchicalTable columns={tableColumns} data={tableData} renderSubRow={renderSubRow} />
 	)
 }

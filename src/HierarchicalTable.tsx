@@ -2,10 +2,11 @@ import BSTable from 'react-bootstrap/Table';
 import * as _ from 'lodash';
 import React, {Fragment} from 'react';
 import {
-	Column,
+	Column, Row,
 	useExpanded, UseExpandedRowProps,
 	useTable
 } from 'react-table'
+import {Item} from './model';
 
 
 export interface HierarchicalTableData {
@@ -18,17 +19,17 @@ export interface HierarchicalTableRow {
 }
 
 export interface TableProps {
-	columns: Column<HierarchicalTableRow>[];
-	data: HierarchicalTableRow[];
-	renderSubRow: ({row} :{row: Row<HierarchicalTableRow}) => JSX.Element | null;
+	columns: Column<Item>[];
+	data: Item[];
+	renderSubRow: ({row} :{row: Row<Item>}) => JSX.Element[]| null;
 }
 
 export function HierarchicalTable(props: TableProps): JSX.Element | null {
 
-	const {getTableProps, headerGroups, rows, prepareRow, visibleColumns} = useTable<HierarchicalTableRow>({
+	const {getTableProps, headerGroups, rows, prepareRow, visibleColumns} = useTable<Item>({
 		columns: props.columns,
 		data: props.data,
-		getSubRows: (originalRow: HierarchicalTableRow) => originalRow.nested ? [originalRow.nested] : undefined as any, // type declaration is forcing to have same type for subrows
+		getSubRows: (originalRow: Item) => originalRow.kids ? Object.values(originalRow.kids).flatMap(kidRecord => kidRecord.records) : [],
 		expandSubRows: false
 	}, useExpanded)
 
