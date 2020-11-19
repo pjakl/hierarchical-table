@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import './App.css';
-import inputJson from './data.json';
-import {HierarchicalTableContainer} from './HierarchicalTableContainer';
+import inputJson from './sample-data.json';
+import {HierarchicalTable} from './HierarchicalTable';
 import {Item} from './model';
 import {arrayPlainToClass} from './validator';
 
@@ -23,7 +23,7 @@ function App() {
 
 	return (
 		<div className="App">
-			<HierarchicalTableContainer data={items} onDelete={(index) => handleDelete(index)} />
+			<HierarchicalTable data={items} onDelete={(index) => handleDelete(index)} />
 		</div>
 	);
 }

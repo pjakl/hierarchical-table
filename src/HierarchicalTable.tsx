@@ -1,72 +1,68 @@
-import BSTable from 'react-bootstrap/Table';
-import React, {Fragment} from 'react';
-import {
-	Column, Row,
-	useExpanded,
-	useTable
-} from 'react-table'
+import * as _ from 'lodash';
+import React from 'react';
+import {Column, Row} from 'react-table';
+import {Table} from './Table';
 import {Item} from './model';
+import './HierarchicalTable.css';
+import { ReactComponent as TrashIcon } from './img/trash.svg';
 
-
-export interface HierarchicalTableData {
-	rootKey?: string;
-	rows:  HierarchicalTableRow[];
-}
-export interface HierarchicalTableRow {
-	data: Object;
-	nested?: HierarchicalTableData;
-}
-
-export interface TableProps {
-	columns: Column<Item>[];
+export interface HierarchicalTableContainerProps {
 	data: Item[];
-	renderSubRow: ({row} :{row: Row<Item>}) => JSX.Element[]| null;
+	rootColumnHeader?: string;
+	onDelete?: (rowId: number) => void;
 }
 
-export function HierarchicalTable(props: TableProps): JSX.Element | null {
+export function HierarchicalTable({data, rootColumnHeader, onDelete }: HierarchicalTableContainerProps) {
+	const expanderColumn = React.useMemo(() => ({
+		Header: () => null,
+		id: 'expander',
+		Cell: ({row}: { row: Row<Item> }) => (
+			row.canExpand ? (
+				<span {...row.getToggleRowExpandedProps()}>
+						 {row.isExpanded ? '▼' : '►'}
+					</span>
+			) : null
+		)
+	}), []);
 
-	const {getTableProps, headerGroups, rows, prepareRow, visibleColumns} = useTable<Item>({
-		columns: props.columns,
-		data: props.data,
-		getSubRows: (originalRow: Item) => originalRow.kids ? Object.values(originalRow.kids).flatMap(kidRecord => kidRecord.records) : [],
-		expandSubRows: false
-	}, useExpanded)
+	const deleteActionColumn : Column<Item> | undefined = React.useMemo(() =>
+		onDelete && ({
+			Header: () => null,
+			id: 'delete',
+			Cell: ({row}: { row: Row<Item> }) => (
+				<span className="delete" {...row.getRowProps()} onClick={() => onDelete(row.index)}>
+					<TrashIcon />
+				</span>
+			)
+		}), [onDelete]);
 
-	return (
-		<BSTable bordered size="sm" {...getTableProps()}>
-			<thead className="thead-dark">
-				{headerGroups.map(headerGroup => (
-					<tr className="table-group" {...headerGroup.getHeaderGroupProps()}>
-						{headerGroup.headers.map(column => (
-							<th {...column.getHeaderProps()}>
-								{column.render('Header')}
-							</th>
-						))}
-					</tr>
-				))}
-			</thead>
-			<tbody>
-				{rows.map((row, i) => {
-					prepareRow(row);
-					return <Fragment key={row.getRowProps().key}>
-						<tr {...row.getRowProps()}>
-							{row.cells.map(cell => {
-								return <td  {...cell.getCellProps()}>
-									{cell.render('Cell')}
-								</td>
-							})
-							}
-						</tr>
-						{row.isExpanded ? (<tr key={`${row.getRowProps().key}_${i}`}>
-							{/*use visibleColumns to span all columns and thus create space for inner table*/}
-							<td colSpan={visibleColumns.length}>
-								{props.renderSubRow({row})}
-							</td>
-						</tr>) : null
-						}
-					</Fragment>;
-				})}
-			</tbody>
-		</BSTable>
-	);
+const dataColumns: Column<Item>[] = React.useMemo(() => _.chain(data)
+	.flatMap(i => Object.keys(i.data))
+	.uniq()
+	.map<Column<Item>>(c => ({Header: c, accessor: `data.${c}`} as Column<Item>))
+	.value(), [data]);
+
+const columnsWithExpander = React.useMemo(() => deleteActionColumn ? [expanderColumn, ...dataColumns, deleteActionColumn] : [expanderColumn, ...dataColumns], [expanderColumn, dataColumns, deleteActionColumn]);
+
+const tableColumns: Column<Item>[] = React.useMemo(() => rootColumnHeader ? [{
+	Header: rootColumnHeader,
+	columns: columnsWithExpander
+}] : columnsWithExpander, [rootColumnHeader, columnsWithExpander]);
+
+
+const tableData = React.useMemo(() => data, [data]);
+
+const renderSubRow = React.useCallback(({row}: { row: Row<Item> }) => {
+	const entries = row.original.kids && Object.entries(row.original.kids);
+	if (entries) {
+		return entries.map(([kidsKey, kidsValue], index) => <HierarchicalTable key={index} rootColumnHeader={kidsKey} data={kidsValue.records} />)
+	}
+	return null;
+}, []);
+
+const getSubRows = React.useCallback((originalRow: Item) => originalRow.kids ? Object.values(originalRow.kids).flatMap(kidRecord => kidRecord.records) : [], []);
+
+return (
+	<Table columns={tableColumns} data={tableData} renderSubRow={renderSubRow} getSubRows={getSubRows} />
+)
 }

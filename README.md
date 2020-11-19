@@ -1,47 +1,35 @@
-# Getting Started with Create React App
+# Hierarchical Table
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project is small React+Typescript application that allows viewing/deleting hierarchical JSON data.
+Data should conform to following contract, i.e every item contains data and nested children.
+Data can have variable number of attributes and item can have variable number of nested children items.  
 
-## Available Scripts
+```typescript
+export interface Item {
+	data: Object;
+	kids?: Kids
+}
+export class KidsRecords {
+	records!: Item[];
+}
+export class Kids {
+	[rootKey: string]: KidsRecords;
+}
+``` 
 
-In the project directory, you can run:
+## Technology used
+Project is using 2 main libraries:
+* *[react-table](https://github.com/tannerlinsley/react-table)* 
+    - Table Headless component giving full control over how the table renders and provides only functionality of "Table".
+    - This project offers much bigger functionality like filtering, sorting or pagination that can be quickly used.
+* *[react-bootstrap](https://react-bootstrap.github.io/components/table/)* 
+    - Project that offers big variety of styled UI components with responsive design support etc.
+    - Particularly, this project is using BT Table for quick styling of a table.
 
-### `yarn start`
+## Sample Data
+Sample data can be found in src folder sample-data.json. Currently, data is loaded immediately, but uploader is going to be implemented.
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
-
-### `yarn test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `yarn build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `yarn eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-# hierarchical-table
+## TODO
+Following items are in-progress:
+1. Uploader to upload json data
+2. More tests for UI actions

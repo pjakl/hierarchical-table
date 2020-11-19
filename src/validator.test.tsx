@@ -1,4 +1,4 @@
-import inputJson from './data.json';
+import inputJson from './sample-data.json';
 import {Item} from './model';
 import {arrayPlainToClass} from './validator';
 
