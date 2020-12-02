@@ -30,6 +30,4 @@ Project is using 2 main libraries:
 Sample data can be found in src folder sample-data.json. Currently, data is loaded immediately, but uploader is going to be implemented.
 
 ## TODO
-Following items are in-progress:
-1. Uploader to upload json data
-2. More tests for UI actions
+1. Show alert upon invalid file

@@ -63,6 +63,7 @@ const renderSubRow = React.useCallback(({row}: { row: Row<Item> }) => {
 const getSubRows = React.useCallback((originalRow: Item) => originalRow.kids ? Object.values(originalRow.kids).flatMap(kidRecord => kidRecord.records) : [], []);
 
 return (
-	<Table columns={tableColumns} data={tableData} renderSubRow={renderSubRow} getSubRows={getSubRows} />
+	tableData && !_.isEmpty(tableData) ?
+		<Table columns={tableColumns} data={tableData} renderSubRow={renderSubRow} getSubRows={getSubRows} /> : null
 )
 }

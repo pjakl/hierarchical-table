@@ -1,20 +1,31 @@
 import React, {useEffect, useState} from 'react';
-import './App.css';
-import inputJson from './sample-data.json';
+import {Form, FormGroup, Row, Container} from 'react-bootstrap';
 import {HierarchicalTable} from './HierarchicalTable';
 import {Item} from './model';
 import {arrayPlainToClass} from './validator';
+import './App.css';
 
 function App() {
-	const [items,  setItemState] = useState<Item[]>([]);
-	const validateAndSet =  async () => {
-		const items = await arrayPlainToClass(inputJson, () => new Item());
-		setItemState(items);
-	}
+	const [items, setItemState] = useState<Item[]>([]);
+	const [file, setFile] = useState<File>();
+
+	const validateAndSet = async () => {
+		if (file) {
+			const reader = new FileReader();
+			reader.onload = async () => {
+				if (reader.result) {
+					const items = await arrayPlainToClass(JSON.parse(reader.result as string), () => new Item());
+					setItemState(items);
+				}
+			}
+			reader.readAsText(file);
+		}
+	};
 
 	useEffect(() => {
-		validateAndSet()
-	}, []);
+		validateAndSet();
+		return () => setFile(undefined);
+	});
 
 	const handleDelete = (index: number) => {
 		const newItems = items.filter((val, idx) => index !== idx);
@@ -23,7 +34,19 @@ function App() {
 
 	return (
 		<div className="App">
-			<HierarchicalTable data={items} onDelete={(index) => handleDelete(index)} />
+			<Container fluid>
+				<Row xl={4}>
+					<Form>
+						<FormGroup>
+							<Form.File data-testid="fileUpload" label="Input file" required custom
+									   onChange={(e: any) => setFile(e.target.files[0])} />
+						</FormGroup>
+					</Form>
+				</Row>
+				<Row xl={1}>
+					<HierarchicalTable data={items} onDelete={(index) => handleDelete(index)} />
+				</Row>
+			</Container>
 		</div>
 	);
 }
