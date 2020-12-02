@@ -9,8 +9,8 @@ import {
 export interface TableProps<T extends Object> {
 	columns: Column<T>[];
 	data: T[];
-	renderSubRow: ({row} :{row: Row<T>}) => JSX.Element[]| null;
-	getSubRows: (originalRow: T) => T[],
+	renderSubRow?: ({row} :{row: Row<T>}) => JSX.Element[]| null;
+	getSubRows?: (originalRow: T) => T[],
 }
 
 export function Table<T extends Object>({columns, data, renderSubRow, getSubRows}: TableProps<T>): JSX.Element | null {
@@ -50,7 +50,7 @@ export function Table<T extends Object>({columns, data, renderSubRow, getSubRows
 						{row.isExpanded ? (<tr key={`${row.getRowProps().key}_${i}`}>
 							{/*use visibleColumns to span all columns and thus create space for inner table*/}
 							<td colSpan={visibleColumns.length}>
-								{renderSubRow({row})}
+								{renderSubRow && renderSubRow({row})}
 							</td>
 						</tr>) : null
 						}
